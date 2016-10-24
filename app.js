@@ -30,7 +30,7 @@ function connectDB() {
       console.log('mongooes databases connection :' + databaseUrl);
 
       UsersSchma = mongoose.Schema({
-          id: String,
+          id: {type: String, required:true, unique:true},
           name: String,
           password: String
       });

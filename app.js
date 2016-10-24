@@ -30,7 +30,7 @@ function connectDB() {
       console.log('mongooes databases connection :' + databaseUrl);
 
       UsersSchma = mongoose.Schema({
-          id: {type: String, required:true, unique:true},
+          id: String,
           name: String,
           password: String
       });
@@ -47,40 +47,37 @@ function connectDB() {
 
 authUser = function(database, id, password, callback) {
     console.log('authUer call');
+    var users = database.collection('users');
+    users.find({"id":id, "password":password}).toArray(function(err, docs) {
+      if(err) {
+        callback(err,null);
+        return;
+      }
 
-    UserModel.find({'id':id, 'password':password}, function(err, results) {
-        if(err) {
-            callback(err, null);
-            return;
-        }
-
-        console.log('아이디: [%s], 비밀번호[%s]로 사용자 검색 결과',id,password);
-        console.dir(results);
-
-        if(results.length > 0 ) {
-            console.log('일치하는 사용자를 찾음', id, password);
-            callback(null, results);
-        } else {
-            Console.log('일치하는 사용자를 찾지 못함');
-            callback(null,null);
-        }
+      if(docs.length > 0) {
+          console.log('아이디 [%s] 비밀번호 [%s]가 일치하는 사용자',id, password);
+          callback(null,docs);
+      } else {
+          console.log('일치하는 사용자를 찾지 못함');
+          callback(null);
+      }
     });
 };
 
 addUser = function(database, id, password, name, callback) {
     console.log('addUser connection');
 
-    var user = new UserModel({"id":id, "password":password, "name":name});
+    var users = database.collection('users');
 
-    user.save(function(err) {
-        if(err) {
-            callback(err, null);
+    users.insert([{"id":id, "password":password, "name":name}], function(err, result) {
+        if (err) {
+            callback(err,null);
             return;
         }
 
-        console.log('사용자 데이터 추가함.');
-        callback(null, user);    
-    });    
+        console.log('users collection added userdata');
+        callback(null,result);
+    });
 };
 
 // view engine setup
